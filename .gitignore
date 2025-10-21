@@ -36,8 +36,9 @@ ENV/
 *.swp
 *.swo
 
-# Data files
+# Data files (except latest ones for deployment)
 *.csv
+!*_latest.csv
 *.json
 *.xlsx
 *.xls

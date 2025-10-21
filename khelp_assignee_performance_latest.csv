@@ -1,0 +1,17 @@
+Year,Assignee,Total_Assigned,Total_Resolved,Avg_Resolution_Days,Resolution_Rate_Pct,With_Engineering,Without_Engineering,Engineering_Rate_Pct,Support_Level,Avg_Status_Transitions_Per_Ticket,Avg_Comments_Per_Ticket,Avg_Time_To_First_Action_Hours,Tickets_Reassigned,Reassignment_Rate_Pct,Comment_Velocity_Per_Day,Triage_Efficiency_Score
+2024,Chris Gaines,462,303,50.5,65.6,160,302,34.6,Level 1,5.82,4.84,2394.6,184,39.8,3.4,30
+2024,Diego Manalang,168,126,48.4,75.0,46,122,27.4,Level 1,3.29,3.02,1779.1,15,8.9,0.82,60
+2024,Christabel Dsouza,1,1,13.8,100.0,0,1,0.0,Insufficient Data,0.0,1.0,,0,0.0,0.0,30
+2024,Mark Horvat,9,0,0.0,0.0,4,5,44.4,Level 1,3.56,6.0,9093.6,0,0.0,0.24,60
+2024,Jennifer Bumford,7,6,67.2,85.7,6,1,85.7,Level 1,3.86,5.43,1502.7,0,0.0,0.26,60
+2024,Tómas Guðmundsson,2,1,246.8,50.0,0,2,0.0,Insufficient Data,0.0,3.5,15.7,0,0.0,0.99,30
+2024,Unassigned,3,2,0.0,66.7,1,2,33.3,Insufficient Data,0.0,0.0,,0,0.0,0.0,30
+2024,Mitchell Newman,344,249,38.0,72.4,117,227,34.0,Level 1,7.39,5.84,1576.3,32,9.3,3.38,60
+2024,Anatoli Antanovich,1,0,0.0,0.0,1,0,100.0,Insufficient Data,0.0,0.0,,0,0.0,0.0,30
+2024,Halldór Örn Guðnason,1,1,41.3,100.0,0,1,0.0,Insufficient Data,1.0,0.0,0.4,0,0.0,0.0,70
+2025,Diego Manalang,101,63,34.7,62.4,27,74,26.7,Level 1,3.02,2.64,706.0,4,4.0,0.96,60
+2025,Mitchell Newman,212,144,51.2,67.9,92,120,43.4,Level 1,7.54,4.69,1158.9,14,6.6,3.5,60
+2025,Chris Gaines,223,154,43.1,69.1,75,148,33.6,Level 1,5.59,5.02,1021.9,115,51.6,3.89,30
+2025,Mark Horvat,129,88,39.5,68.2,48,81,37.2,Level 1,3.65,4.42,846.5,6,4.7,2.09,60
+2025,Unassigned,2,2,6.1,100.0,0,2,0.0,Insufficient Data,0.0,0.0,,0,0.0,0.0,30
+2025,Kenneth Frandolf Alsay,77,49,28.1,63.6,14,63,18.2,Level 1,4.81,4.45,462.6,8,10.4,1.76,30
