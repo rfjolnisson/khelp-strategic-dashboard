@@ -764,44 +764,6 @@ elif page == "🔧 Engineering Involvement":
         
         st.dataframe(df_sev, width="stretch", hide_index=True)
     
-    # Categories needing engineering
-    st.markdown("---")
-    st.subheader("📋 Which Categories Require Engineering?")
-    
-    if 'cat_eng' in data:
-        df_cat = data['cat_eng']
-        
-        # Focus on 2025
-        df_cat_2025 = df_cat[df_cat['2025_Total'] > 0].sort_values('2025_Eng_Rate', ascending=False).head(10)
-        
-        fig = go.Figure()
-        
-        fig.add_trace(go.Bar(
-            y=df_cat_2025['Category'],
-            x=df_cat_2025['2025_Eng_Rate'],
-            orientation='h',
-            marker_color='#d62728',
-            text=[f"{val:.1f}%" for val in df_cat_2025['2025_Eng_Rate']],
-            textposition='auto'
-        ))
-        
-        fig.update_layout(
-            title="Top 10 Categories by Engineering Involvement Rate (2025)",
-            xaxis_title="% Requiring Engineering",
-            yaxis_title=None,
-            height=500
-        )
-        
-        st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
-        
-        st.success("""
-        **💡 Strategic Insight:** Categories with high engineering rates are prime candidates for:
-        - Product improvements (fix root cause)
-        - Enhanced documentation
-        - Self-service tools
-        - Training programs
-        """)
-    
     # Strategic Recommendations for 2026
     st.markdown("---")
     st.subheader("🎯 2026 Engineering Escalation Model Optimization")
