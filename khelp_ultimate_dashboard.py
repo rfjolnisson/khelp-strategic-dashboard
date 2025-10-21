@@ -337,7 +337,7 @@ elif page == "👥 Team Scorecard":
             col1, col2, col3, col4 = st.columns(4)
             
             with col1:
-                avg_tickets = l1_agents['Tickets_Resolved'].mean()
+                avg_tickets = l1_agents['Total_Resolved'].mean()
                 st.metric("Avg Tickets/Agent", f"{avg_tickets:.0f}")
             
             with col2:
@@ -354,10 +354,10 @@ elif page == "👥 Team Scorecard":
             
             # Individual Rankings
             st.subheader("Individual Rankings")
-            l1_sorted = l1_agents.sort_values('Tickets_Resolved', ascending=False)
+            l1_sorted = l1_agents.sort_values('Total_Resolved', ascending=False)
             
             for idx, row in l1_sorted.iterrows():
-                with st.expander(f"{row['Assignee']} - {row['Tickets_Resolved']} tickets"):
+                with st.expander(f"{row['Assignee']} - {row['Total_Resolved']} tickets"):
                     col1, col2, col3 = st.columns(3)
                     with col1:
                         st.metric("Resolution Rate", f"{row['Resolution_Rate_Pct']:.1f}%")
