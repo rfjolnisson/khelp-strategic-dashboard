@@ -2151,7 +2151,9 @@ elif page == "🧪 AI Category Insights":
         if len(filtered_df) > 0:
             # Create display dataframe with truncated reasoning
             display_df = filtered_df.copy()
-            display_df['reasoning_short'] = display_df['reasoning'].str[:100] + "..." if display_df['reasoning'].str.len() > 100 else display_df['reasoning']
+            display_df['reasoning_short'] = display_df['reasoning'].apply(
+                lambda x: x[:100] + "..." if len(str(x)) > 100 else str(x)
+            )
             
             # Color code confidence
             def color_confidence(val):
