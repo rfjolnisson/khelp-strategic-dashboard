@@ -1981,13 +1981,14 @@ elif page == "🧪 AI Category Insights":
                     'Category': category,
                     'Bug Count': count,
                     'Avg Confidence': f"{avg_conf:.0f}%",
-                    'Expected Fix Impact': f"{count * 0.25:.0f} fewer tickets/year"
+                    'Expected Fix Impact': f"{count * 0.25:.0f} fewer tickets/year",
+                    'Priority': 'Critical' if count >= 50 else 'High' if count >= 30 else 'Medium'
                 })
             
             bug_df = pd.DataFrame(bug_details)
             st.dataframe(bug_df, use_container_width=True, hide_index=True)
             
-            st.info("💡 **Engineering Impact:** Fixing these top 5 categories could reduce 47 tickets/year = $7,050 savings")
+            st.info("💡 **Engineering Impact:** Fixing these top 5 categories could significantly reduce ticket volume")
         
         with tab2:
             st.markdown("### 📚 Top 5 Knowledge Base Opportunities")
@@ -2006,8 +2007,8 @@ elif page == "🧪 AI Category Insights":
                     'How-To Tickets': count,
                     'Deflection Rate': f"{deflection_rate*100:.0f}%",
                     'Expected Deflection': expected_deflection,
-                    'Article Investment': '$500',
-                    'Annual Savings': f"${expected_deflection * 150:.0f}"
+                    'Article Complexity': 'Medium' if 'Configuration' in category else 'Low',
+                    'Priority': 'High' if count >= 7 else 'Medium'
                 })
             
             kb_df = pd.DataFrame(kb_opportunities)
@@ -2040,7 +2041,7 @@ elif page == "🧪 AI Category Insights":
             
             st.plotly_chart(fig_kb, use_container_width=True, config={"displayModeBar": False})
             
-            st.info("💡 **KB Impact:** 5 articles × $500 = $2,500 investment → 31 deflections/year = $4,650 savings (186% ROI)")
+            st.info("💡 **KB Impact:** 5 articles could deflect ~31 tickets/year with high ROI potential")
         
         with tab3:
             st.markdown("### ⚙️ Top Configuration Issues - Setup Wizards Needed")
@@ -2060,48 +2061,13 @@ elif page == "🧪 AI Category Insights":
                     'Deflection Rate': f"{deflection_rate*100:.0f}%",
                     'Expected Deflection': expected_deflection,
                     'Wizard Type': 'Setup Templates' if 'Data' in category else 'Permission Guide',
-                    'Development Cost': '$2,500' if 'Data' in category else '$2,500'
+                    'Complexity': 'High' if 'Data' in category else 'Medium'
                 })
             
             config_df = pd.DataFrame(config_opportunities)
             st.dataframe(config_df, use_container_width=True, hide_index=True)
             
-            st.info("💡 **Wizard Impact:** $5,000 development → 18 deflections/year = $2,700 savings (54% ROI)")
-        
-        st.markdown("---")
-        
-        # ROI Summary Dashboard
-        st.subheader("💰 ROI Summary Dashboard")
-        
-        col1, col2, col3, col4 = st.columns(4)
-        
-        with col1:
-            st.metric(
-                "Total Investment",
-                "$7,500",
-                help="Bug fixes: $0 (engineering time) + KB articles: $2,500 + Wizards: $5,000"
-            )
-        
-        with col2:
-            st.metric(
-                "Annual Savings",
-                "$14,400",
-                help="Bug reduction: $7,050 + KB deflection: $4,650 + Wizard deflection: $2,700"
-            )
-        
-        with col3:
-            st.metric(
-                "Net Benefit",
-                "$6,900/year",
-                delta_color="normal"
-            )
-        
-        with col4:
-            st.metric(
-                "ROI",
-                "92%",
-                delta_color="normal"
-            )
+            st.info("💡 **Wizard Impact:** Setup wizards could deflect ~18 tickets/year with good ROI potential")
         
         st.markdown("---")
         
