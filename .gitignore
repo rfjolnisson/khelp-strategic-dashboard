@@ -39,6 +39,7 @@ ENV/
 # Data files (except latest ones for deployment)
 *.csv
 !*_latest.csv
+!categorization_dual_axis_20251021_171333.csv
 *.json
 *.xlsx
 *.xls
