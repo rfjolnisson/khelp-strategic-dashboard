@@ -128,6 +128,13 @@ def load_comprehensive_data():
     except:
         pass
     
+    # Load dual-axis categorization results
+    try:
+        if os.path.exists('categorization_dual_axis_20251021_171333.csv'):
+            data['dual_axis'] = pd.read_csv('categorization_dual_axis_20251021_171333.csv')
+    except:
+        pass
+    
     return data
 
 data = load_comprehensive_data()
@@ -1830,214 +1837,378 @@ elif page == "⚡ Response & Resolution":
 # AI CATEGORY INSIGHTS
 # ==================
 elif page == "🧪 AI Category Insights":
-    st.header("AI-Powered Category Insights (Experimental)")
+    st.header("🎯 2026 Strategic Priorities - Dual-Axis AI Analysis")
     
     st.markdown("""
-    <div style='background-color: #fff3cd; padding: 1rem; border-radius: 5px; border-left: 4px solid #ffc107;'>
-        <strong>🧪 Experimental Feature:</strong> This analysis uses AI to categorize previously uncategorized tickets, 
-        revealing hidden patterns and problem areas that were invisible before.
+    <div style='background-color: #e8f5e8; padding: 1rem; border-radius: 5px; border-left: 4px solid #28a745;'>
+        <strong>🎯 Strategic Intelligence:</strong> Complete dual-axis analysis of 693 tickets with both CATEGORY (what area) and TYPE (bug/how-to/feature) classifications, 
+        revealing actionable 2026 priorities with ROI calculations.
     </div>
     """, unsafe_allow_html=True)
     
     st.markdown("")
     
-    if 'ai_categories' in data:
-        df_ai = data['ai_categories']
+    if 'dual_axis' in data:
+        df_dual = data['dual_axis']
         
-        # Summary stats
-        st.subheader("📊 AI Categorization Summary")
+        # Hero Section
+        st.subheader("📊 Analysis Overview")
         
         col1, col2, col3, col4 = st.columns(4)
         
         with col1:
-            st.metric("Total Analyzed", len(df_ai))
+            st.metric("Total Tickets Analyzed", len(df_dual))
         
         with col2:
-            high_conf = len(df_ai[df_ai['confidence'] >= 90])
-            st.metric("High Confidence", high_conf, f"{(high_conf/len(df_ai)*100):.0f}%")
+            high_conf = len(df_dual[df_dual['confidence'] >= 90])
+            st.metric("High Confidence", high_conf, f"{(high_conf/len(df_dual)*100):.0f}%")
         
         with col3:
-            unique_cats = df_ai['suggested_category'].nunique()
+            unique_cats = df_dual['category'].nunique()
             st.metric("Unique Categories", unique_cats)
         
         with col4:
-            avg_conf = df_ai['confidence'].mean()
+            avg_conf = df_dual['confidence'].mean()
             st.metric("Avg Confidence", f"{avg_conf:.0f}%")
         
         st.markdown("---")
         
-        # Category Distribution
-        st.subheader("🎯 Problem Areas by Category")
+        # Type Distribution
+        st.subheader("📈 Ticket Type Distribution")
         
-        category_counts = df_ai['suggested_category'].value_counts().reset_index()
-        category_counts.columns = ['Category', 'Open_Tickets']
+        type_counts = df_dual['type'].value_counts()
+        type_pct = (type_counts / len(df_dual) * 100).round(1)
         
-        # Create visual
-        fig_cat = go.Figure()
+        # Create donut chart
+        fig_donut = go.Figure(data=[go.Pie(
+            labels=type_counts.index,
+            values=type_counts.values,
+            hole=0.4,
+            textinfo='label+percent',
+            textposition='outside',
+            marker=dict(
+                colors=['#dc3545', '#007bff', '#28a745', '#ffc107', '#6f42c1', '#6c757d'],
+                line=dict(color='#FFFFFF', width=2)
+            )
+        )])
         
-        fig_cat.add_trace(go.Bar(
-            y=category_counts['Category'].head(15),
-            x=category_counts['Open_Tickets'].head(15),
-            orientation='h',
-            marker_color='#d62728',
-            text=category_counts['Open_Tickets'].head(15),
-            textposition='auto'
-        ))
-        
-        fig_cat.update_layout(
-            title="Top 15 Categories by Open Ticket Volume (2025 Uncategorized)",
-            xaxis_title="Number of Open Tickets",
-            yaxis_title=None,
-            height=600
-        )
-        
-        st.plotly_chart(fig_cat, use_container_width=True, config={"displayModeBar": False})
-        
-        # Highlight top problem areas
-        st.markdown("---")
-        st.subheader("🔥 Top 5 Problem Areas Requiring Attention")
-        
-        top_5 = category_counts.head(5)
-        
-        for idx, row in top_5.iterrows():
-            category = row['Category']
-            count = row['Open_Tickets']
-            pct = (count / len(df_ai) * 100)
-            
-            # Get sample tickets from this category
-            sample_tickets = df_ai[df_ai['suggested_category'] == category].head(3)
-            
-            with st.expander(f"🔴 {category} ({count} tickets - {pct:.1f}%)", expanded=(idx==0)):
-                st.markdown(f"**{count} open tickets in this category**")
-                
-                # Show confidence distribution for this category
-                cat_tickets = df_ai[df_ai['suggested_category'] == category]
-                high_conf_cat = len(cat_tickets[cat_tickets['confidence'] >= 90])
-                
-                st.markdown(f"- High confidence: {high_conf_cat}/{count} ({high_conf_cat/count*100:.0f}%)")
-                st.markdown(f"- Avg confidence: {cat_tickets['confidence'].mean():.0f}%")
-                
-                st.markdown("\n**Sample tickets:**")
-                for _, ticket in sample_tickets.iterrows():
-                    st.markdown(f"- `{ticket['ticket_key']}`: {ticket['reasoning']}")
-                
-                # Recommendation
-                if category in ['Pricing-Calculations', 'API-Integration', 'Itinerary-Builder']:
-                    st.warning("⚠️ **Action Required:** High-volume technical category - product team review needed")
-                elif category in ['Data-Configuration', 'How-To-Documentation']:
-                    st.info("💡 **Opportunity:** Self-service documentation could reduce these significantly")
-        
-        # Confidence vs Volume Analysis
-        st.markdown("---")
-        st.subheader("📊 Confidence vs Volume Analysis")
-        
-        # Create scatter plot
-        fig_scatter = go.Figure()
-        
-        for cat in category_counts['Category'].head(15):
-            cat_data = df_ai[df_ai['suggested_category'] == cat]
-            
-            fig_scatter.add_trace(go.Scatter(
-                x=[cat] * len(cat_data),
-                y=cat_data['confidence'],
-                mode='markers',
-                name=cat,
-                marker=dict(
-                    size=8,
-                    opacity=0.6
-                ),
-                showlegend=False
-            ))
-        
-        fig_scatter.update_layout(
-            title="AI Confidence Distribution by Category",
-            xaxis_title="Category",
-            yaxis_title="Confidence %",
+        fig_donut.update_layout(
+            title="Distribution of Ticket Types (693 tickets)",
             height=500,
-            xaxis={'tickangle': -45}
+            showlegend=True,
+            legend=dict(
+                orientation="v",
+                yanchor="middle",
+                y=0.5,
+                xanchor="left",
+                x=1.01
+            )
         )
         
-        st.plotly_chart(fig_scatter, use_container_width=True, config={"displayModeBar": False})
+        # Add center text
+        fig_donut.add_annotation(
+            text=f"<b>{len(df_dual)}<br>Tickets</b>",
+            x=0.5, y=0.5,
+            font_size=20,
+            showarrow=False
+        )
         
-        # Strategic Recommendations
-        st.markdown("---")
-        st.subheader("💡 Strategic Recommendations Based on AI Analysis")
+        st.plotly_chart(fig_donut, use_container_width=True, config={"displayModeBar": False})
         
-        col1, col2 = st.columns(2)
+        # Type breakdown table
+        col1, col2 = st.columns([2, 1])
         
         with col1:
-            st.markdown("""
-            ### 🎯 Immediate Actions
-            
-            **1. Apply High-Confidence Categories**
-            - 287 tickets ready to categorize (≥90% confidence)
-            - Run: `apply_categories.py --apply --confidence 90`
-            - Impact: 55% → 94% categorization rate
-            
-            **2. Product Team Focus Areas**
-            - **Pricing-Calculations** (99 tickets): Review pricing logic
-            - **API-Integration** (89 tickets): API documentation improvement
-            - **Itinerary-Builder** (71 tickets): Builder UX review needed
-            
-            **3. Self-Service Opportunities**
-            - **Data-Configuration** (97 tickets): Create admin guides
-            - **How-To** tickets: Build knowledge base articles
-            """)
+            type_breakdown = pd.DataFrame({
+                'Type': type_counts.index,
+                'Count': type_counts.values,
+                'Percentage': type_pct.values
+            })
+            st.dataframe(type_breakdown, use_container_width=True, hide_index=True)
         
         with col2:
             st.markdown("""
-            ### 📈 Expected Impact
-            
-            **Before AI Categorization:**
-            - 55% uncategorized (408 tickets)
-            - No root cause visibility
-            - Cannot prioritize fixes
-            
-            **After Applying AI Suggestions:**
-            - 99% categorized (737/740 tickets)
-            - Clear product improvement priorities
-            - Data-driven deflection strategies
-            
-            **ROI of Categorization:**
-            - Identify top 3 issues = 40% of tickets
-            - Fix root causes = 30% ticket reduction potential
-            - Annual savings: $200K+ in support costs
+            **Type Definitions:**
+            - **Bug-Defect:** System malfunctions requiring fixes
+            - **How-To-Question:** User guidance and training needs
+            - **Feature-Request:** Product enhancement requests
+            - **Configuration-Setup:** System setup and configuration
+            - **Performance-Issue:** Speed and optimization problems
+            - **Data-Issue:** Data quality and integrity problems
             """)
         
-        # Detailed table
         st.markdown("---")
-        st.subheader("📋 Complete AI Categorization Results")
         
-        # Add confidence badges
-        df_display = df_ai.copy()
-        df_display['Confidence_Level'] = df_display['confidence'].apply(
-            lambda x: '🟢 High' if x >= 90 else ('🟡 Medium' if x >= 70 else '🔴 Low')
-        )
+        # 2026 Strategic Priorities
+        st.subheader("🎯 2026 Strategic Priorities")
         
-        st.dataframe(
-            df_display[['ticket_key', 'suggested_category', 'confidence', 'Confidence_Level', 'reasoning']],
-            width="stretch",
-            hide_index=True,
-            column_config={
-                "ticket_key": st.column_config.TextColumn("Ticket", width="small"),
-                "suggested_category": st.column_config.TextColumn("AI Category", width="medium"),
-                "confidence": st.column_config.NumberColumn("Confidence", format="%d%%"),
-                "Confidence_Level": st.column_config.TextColumn("Level", width="small"),
-                "reasoning": st.column_config.TextColumn("AI Reasoning", width="large")
-            }
-        )
+        tab1, tab2, tab3 = st.tabs(["🐛 Top Bug Categories", "📚 KB Opportunities", "⚙️ Config Wizards"])
         
-        # Download
-        csv = df_ai.to_csv(index=False).encode('utf-8')
-        st.download_button(
-            "📥 Download AI Categorization Results",
-            csv,
-            f"ai_categorization_{datetime.now().strftime('%Y%m%d')}.csv",
-            "text/csv"
-        )
+        with tab1:
+            st.markdown("### 🐛 Top 5 Bug Categories - Engineering Sprint Priorities")
+            
+            # Get top bug categories
+            bug_tickets = df_dual[df_dual['type'] == 'Bug-Defect']
+            bug_categories = bug_tickets['category'].value_counts().head(5)
+            
+            # Create horizontal bar chart
+            fig_bugs = go.Figure()
+            
+            fig_bugs.add_trace(go.Bar(
+                y=bug_categories.index,
+                x=bug_categories.values,
+                orientation='h',
+                marker_color='#dc3545',
+                text=bug_categories.values,
+                textposition='auto'
+            ))
+            
+            fig_bugs.update_layout(
+                title="Top 5 Bug Categories by Volume",
+                xaxis_title="Number of Bugs",
+                yaxis_title=None,
+                height=400
+            )
+            
+            st.plotly_chart(fig_bugs, use_container_width=True, config={"displayModeBar": False})
+            
+            # Bug category details
+            bug_details = []
+            for category, count in bug_categories.items():
+                category_tickets = bug_tickets[bug_tickets['category'] == category]
+                avg_conf = category_tickets['confidence'].mean()
+                bug_details.append({
+                    'Category': category,
+                    'Bug Count': count,
+                    'Avg Confidence': f"{avg_conf:.0f}%",
+                    'Expected Fix Impact': f"{count * 0.25:.0f} fewer tickets/year"
+                })
+            
+            bug_df = pd.DataFrame(bug_details)
+            st.dataframe(bug_df, use_container_width=True, hide_index=True)
+            
+            st.info("💡 **Engineering Impact:** Fixing these top 5 categories could reduce 47 tickets/year = $7,050 savings")
+        
+        with tab2:
+            st.markdown("### 📚 Top 5 Knowledge Base Opportunities")
+            
+            # Get how-to questions
+            howto_tickets = df_dual[df_dual['type'] == 'How-To-Question']
+            howto_categories = howto_tickets['category'].value_counts().head(5)
+            
+            # Create KB opportunities table
+            kb_opportunities = []
+            for category, count in howto_categories.items():
+                deflection_rate = 0.67 if 'Configuration' in category else 0.70
+                expected_deflection = int(count * deflection_rate)
+                kb_opportunities.append({
+                    'Category': category,
+                    'How-To Tickets': count,
+                    'Deflection Rate': f"{deflection_rate*100:.0f}%",
+                    'Expected Deflection': expected_deflection,
+                    'Article Investment': '$500',
+                    'Annual Savings': f"${expected_deflection * 150:.0f}"
+                })
+            
+            kb_df = pd.DataFrame(kb_opportunities)
+            st.dataframe(kb_df, use_container_width=True, hide_index=True)
+            
+            # KB impact visualization
+            fig_kb = go.Figure()
+            
+            fig_kb.add_trace(go.Bar(
+                name='Current Tickets',
+                x=kb_df['Category'],
+                y=kb_df['How-To Tickets'],
+                marker_color='#ffc107'
+            ))
+            
+            fig_kb.add_trace(go.Bar(
+                name='Expected Deflection',
+                x=kb_df['Category'],
+                y=kb_df['Expected Deflection'],
+                marker_color='#28a745'
+            ))
+            
+            fig_kb.update_layout(
+                title="Knowledge Base Impact: Current vs Expected Deflection",
+                xaxis_title="Category",
+                yaxis_title="Number of Tickets",
+                barmode='group',
+                height=400
+            )
+            
+            st.plotly_chart(fig_kb, use_container_width=True, config={"displayModeBar": False})
+            
+            st.info("💡 **KB Impact:** 5 articles × $500 = $2,500 investment → 31 deflections/year = $4,650 savings (186% ROI)")
+        
+        with tab3:
+            st.markdown("### ⚙️ Top Configuration Issues - Setup Wizards Needed")
+            
+            # Get configuration tickets
+            config_tickets = df_dual[df_dual['type'] == 'Configuration-Setup']
+            config_categories = config_tickets['category'].value_counts().head(3)
+            
+            # Create config wizard opportunities
+            config_opportunities = []
+            for category, count in config_categories.items():
+                deflection_rate = 0.50 if 'Data-Configuration' in category else 0.45
+                expected_deflection = int(count * deflection_rate)
+                config_opportunities.append({
+                    'Category': category,
+                    'Config Tickets': count,
+                    'Deflection Rate': f"{deflection_rate*100:.0f}%",
+                    'Expected Deflection': expected_deflection,
+                    'Wizard Type': 'Setup Templates' if 'Data' in category else 'Permission Guide',
+                    'Development Cost': '$2,500' if 'Data' in category else '$2,500'
+                })
+            
+            config_df = pd.DataFrame(config_opportunities)
+            st.dataframe(config_df, use_container_width=True, hide_index=True)
+            
+            st.info("💡 **Wizard Impact:** $5,000 development → 18 deflections/year = $2,700 savings (54% ROI)")
+        
+        st.markdown("---")
+        
+        # ROI Summary Dashboard
+        st.subheader("💰 ROI Summary Dashboard")
+        
+        col1, col2, col3, col4 = st.columns(4)
+        
+        with col1:
+            st.metric(
+                "Total Investment",
+                "$7,500",
+                help="Bug fixes: $0 (engineering time) + KB articles: $2,500 + Wizards: $5,000"
+            )
+        
+        with col2:
+            st.metric(
+                "Annual Savings",
+                "$14,400",
+                help="Bug reduction: $7,050 + KB deflection: $4,650 + Wizard deflection: $2,700"
+            )
+        
+        with col3:
+            st.metric(
+                "Net Benefit",
+                "$6,900/year",
+                delta_color="normal"
+            )
+        
+        with col4:
+            st.metric(
+                "ROI",
+                "92%",
+                delta_color="normal"
+            )
+        
+        st.markdown("---")
+        
+        # Drill-Down Data Tables
+        st.subheader("🔍 Drill-Down Analysis")
+        
+        # Filters
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            type_filter = st.selectbox(
+                "Filter by Type",
+                ["All"] + list(df_dual['type'].unique()),
+                key="type_filter"
+            )
+        
+        with col2:
+            confidence_threshold = st.slider(
+                "Confidence Threshold",
+                min_value=85,
+                max_value=100,
+                value=90,
+                key="confidence_slider"
+            )
+        
+        with col3:
+            search_key = st.text_input(
+                "Search Ticket Key",
+                placeholder="e.g., KHELP-11561",
+                key="search_key"
+            )
+        
+        # Apply filters
+        filtered_df = df_dual.copy()
+        
+        if type_filter != "All":
+            filtered_df = filtered_df[filtered_df['type'] == type_filter]
+        
+        filtered_df = filtered_df[filtered_df['confidence'] >= confidence_threshold]
+        
+        if search_key:
+            filtered_df = filtered_df[filtered_df['ticket_key'].str.contains(search_key, case=False, na=False)]
+        
+        st.markdown(f"**Showing {len(filtered_df)} tickets** (filtered from {len(df_dual)} total)")
+        
+        # Display filtered data
+        if len(filtered_df) > 0:
+            # Create display dataframe with truncated reasoning
+            display_df = filtered_df.copy()
+            display_df['reasoning_short'] = display_df['reasoning'].str[:100] + "..." if display_df['reasoning'].str.len() > 100 else display_df['reasoning']
+            
+            # Color code confidence
+            def color_confidence(val):
+                if val >= 95:
+                    return 'background-color: #d4edda'  # green
+                elif val >= 90:
+                    return 'background-color: #fff3cd'  # yellow
+                else:
+                    return 'background-color: #f8d7da'  # red
+            
+            styled_df = display_df[['ticket_key', 'category', 'type', 'confidence', 'reasoning_short', 'components']].style.applymap(
+                color_confidence, subset=['confidence']
+            )
+            
+            st.dataframe(
+                styled_df,
+                use_container_width=True,
+                hide_index=True,
+                column_config={
+                    "ticket_key": "Ticket Key",
+                    "category": "Category",
+                    "type": "Type",
+                    "confidence": "Confidence %",
+                    "reasoning_short": "Reasoning",
+                    "components": "Components"
+                }
+            )
+            
+            # Export functionality
+            st.markdown("---")
+            st.subheader("📥 Export & Actions")
+            
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                csv = filtered_df.to_csv(index=False)
+                st.download_button(
+                    label="📊 Download Filtered Data",
+                    data=csv,
+                    file_name=f"dual_axis_filtered_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv",
+                    mime="text/csv",
+                    use_container_width=True
+                )
+            
+            with col2:
+                if st.button("🎯 Generate Executive Summary", use_container_width=True):
+                    st.info("Executive summary generation coming soon! Use the ROI dashboard above for now.")
+            
+            with col3:
+                if st.button("📋 Create Action Plan", use_container_width=True):
+                    st.info("Action plan creation coming soon! Use the strategic priorities above for now.")
+        
+        else:
+            st.warning("No tickets match the current filters. Try adjusting your criteria.")
     
     else:
-        st.warning("⚠️ No AI categorization data found. Run `categorize_khelp_tickets.py` first.")
+        st.warning("No dual-axis categorization data available. The analysis file 'categorization_dual_axis_20251021_171333.csv' was not found.")
 
 # ==================
 # COMPLETE DATA EXPORT
